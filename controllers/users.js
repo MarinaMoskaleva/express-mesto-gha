@@ -42,8 +42,11 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
+  if (!name || !about) {
+    return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при обновлении профиля."})
+  }
 
-  User.findByIdAndUpdate(req.params.userId, { name, about})
+  User.findByIdAndUpdate(req.params.userId, { name, about},{ new: true })
     .then(user => res.send({ user }))
     .catch(err => {
       if(err.name === 'ValidationError') {
@@ -59,7 +62,7 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.params.userId, {avatar})
+  User.findByIdAndUpdate(req.params.userId, {avatar}, { new: true })
     .then(user => res.send({ user }))
     .catch(err => {
       if(err.name === 'ValidationError') {
