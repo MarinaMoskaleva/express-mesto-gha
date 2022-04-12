@@ -41,7 +41,7 @@ module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.params.userId, { name, about})
-    .then(user => res.send({ data: user }))
+    .then(user => res.send({ user }))
     .catch(err => {
       if(err.name === 'ValidationError') {
         return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при обновлении профиля."})
@@ -57,7 +57,7 @@ module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.params.userId, {avatar})
-    .then(user => res.send({ data: user }))
+    .then(user => res.send({ user }))
     .catch(err => {
       if(err.name === 'ValidationError') {
         return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при обновлении аватара."})
