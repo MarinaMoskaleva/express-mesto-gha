@@ -5,12 +5,7 @@ const {ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL} = requ
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then(users => res.send({ data: users }))
-    .catch(err => {
-      if(err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при создании пользователя."})
-      }
-      res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." })
-    });
+    .catch(() => { res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." }) });
 };
 
 module.exports.getUserById = (req, res) => {
@@ -31,15 +26,13 @@ module.exports.getUserById = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
+  if (!name || !about || !avatar) {
+    return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при создании пользователя."})
+  }
 
   User.create({ name, about, avatar })
     .then(user => res.send({ data: user }))
-    .catch(err => {
-      if(err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Переданы некорректные данные при создании пользователя."})
-      }
-      res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." })
-    }
+    .catch(() => { res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." }) }
     );
 };
 
