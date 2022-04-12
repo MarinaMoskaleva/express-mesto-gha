@@ -14,14 +14,17 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
+  if(!mongoose.isValidObjectId(req.params.cardId)) {
+    return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Передан некорректный _id карточки."})
+  }
   Card.findByIdAndRemove(req.params.cardId)
-    .then(() => res.send({ message: "Пост удален." }))
-    .catch(err => {
-      if(err.name === 'CastError') {
+    .then((card) =>{
+      if (!card){
         return res.status(ERROR_CODE_NOT_FOUND).send({message: "Карточка с указанным _id не найдена."})
       }
-      res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." })
-    });
+      res.send({ card })
+    })
+    .catch(() => { res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." }) });
 };
 
 module.exports.createCard = (req, res) => {
