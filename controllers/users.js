@@ -14,7 +14,6 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  console.log(mongoose.isValidObjectId(req.params.userId));
   if(!mongoose.isValidObjectId(req.params.userId)) {
     return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Передан некорректный _id пользователя."})
   }
