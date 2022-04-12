@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const mongoose = require('mongoose');
 const {ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL} = require('../constants');
 
 module.exports.getUsers = (req, res) => {
@@ -13,15 +14,18 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
+  console.log(mongoose.isValidObjectId(req.params.userId));
+  if(!mongoose.isValidObjectId(req.params.userId)) {
+    return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Передан некорректный _id пользователя."})
+  }
   User.findById(req.params.userId)
-    .then(user => res.send({user}))
-    .catch(err => {
-      if(err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({message: "Передан некорректный _id пользователя."})
-      }
-      if(err.name === 'CastError') {
+    .then(user => {
+      if (!user){
         return res.status(ERROR_CODE_NOT_FOUND).send({message: "Пользователь по указанному _id не найден."})
       }
+      res.send({user})
+    })
+    .catch(() => {
       res.status(ERROR_CODE_INTERNAL).send({ message: "Ошибка по умолчанию." })
     })
 };
