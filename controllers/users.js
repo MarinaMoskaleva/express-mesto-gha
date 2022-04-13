@@ -14,14 +14,16 @@ module.exports.getUserById = (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.send({ user });
       }
-      res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя.' });
+      } else {
+        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
       }
-      res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
     });
 };
 
@@ -33,8 +35,9 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
       }
-      res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
     });
 };
 
@@ -46,11 +49,11 @@ module.exports.updateUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
       }
-      res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
     });
 };
 
@@ -62,10 +65,10 @@ module.exports.updateUserAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
       }
-      res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
     });
 };
