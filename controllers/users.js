@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('../models/user');
 const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL } = require('../constants');
 
@@ -11,9 +10,6 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  if (!mongoose.isValidObjectId(req.params.userId)) {
-    res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя.' });
-  }
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
@@ -21,7 +17,10 @@ module.exports.getUserById = (req, res) => {
       }
       res.send({ user });
     })
-    .catch(() => {
+    .catch((err) => {
+      if (err.name === 'CasrError') {
+        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя.' });
+      }
       res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
     });
 };
@@ -41,11 +40,8 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
-  if (!name || !about) {
-    res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-  }
 
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -61,7 +57,7 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
