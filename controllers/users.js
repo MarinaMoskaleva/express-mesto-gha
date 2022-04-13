@@ -18,7 +18,7 @@ module.exports.getUserById = (req, res) => {
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'CasrError') {
+      if (err.name === 'CastError') {
         res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя.' });
       }
       res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
