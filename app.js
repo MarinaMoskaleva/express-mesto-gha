@@ -7,7 +7,7 @@ const { ERROR_CODE_INTERNAL } = require('./constants');
 const {
   createUser, login,
 } = require('./controllers/users');
-const NotFoundError = require('./errors/not-found-err');
+// const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -30,9 +30,14 @@ app.post('/signup', createUser);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use((req, res, next) => {
-  next(new NotFoundError('Неправильный путь'));
+// app.use((req, res, next) => {
+//   next(new NotFoundError('Неправильный путь'));
+// });
+
+app.use((req, res) => {
+  res.status(404).send({ message: 'Неправильный путь' });
 });
+
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = ERROR_CODE_INTERNAL, message } = err;
