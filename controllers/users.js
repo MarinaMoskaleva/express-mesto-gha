@@ -40,12 +40,17 @@ module.exports.createUser = (req, res, next) => {
   if (!email || !password) {
     throw new BadRequestError('Поля email и password обязательны.');
   }
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, password: hash, email,
     }))
-    .then((user) => res.send({ data: user }))
+    .then(() => {
+      res.status(200).send({
+        data: {
+          name, about, avatar, email,
+        },
+      });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
