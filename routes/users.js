@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
-const NotFoundError = require('../errors/not-found-err');
 
 const {
   getUsers, getUserById, updateUser, updateUserAvatar, getCurrentUsers,
@@ -33,9 +32,5 @@ router.patch('/me/avatar', celebrate({
     }),
   }),
 }), updateUserAvatar);
-
-router.use('/', (req, res, next) => {
-  next(new NotFoundError('Страница по указанному маршруту не найдена'));
-});
 
 module.exports = router;

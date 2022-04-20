@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { errors } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
+// const validator = require('validator');
 const { ERROR_CODE_INTERNAL } = require('./constants');
 const auth = require('./middlewares/auth');
 const {
@@ -23,7 +24,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), createUser);
 
 // app.use(auth);
 
