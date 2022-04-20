@@ -1,5 +1,10 @@
 const Card = require('../models/card');
-const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL } = require('../constants');
+const {
+  ERROR_CODE_BAD_REQUEST,
+  ERROR_CODE_NOT_FOUND,
+  ERROR_CODE_INTERNAL,
+  ERROR_CODE_BAD_AUTH,
+} = require('../constants');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -10,26 +15,29 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => {
-      if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
-      } else {
-        res.send({ card });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при удалении карточки.' });
-      } else {
-        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
-      }
-    });
+  if (req.user._id !== req.params.owner) {
+    res.status(ERROR_CODE_BAD_AUTH).send({ message: 'Попытка удалить чужую карточку.' });
+  } else {
+    Card.findByIdAndRemove(req.params.cardId)
+      .then((card) => {
+        if (!card) {
+          res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+        } else {
+          res.send({ card });
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'CastError') {
+          res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при удалении карточки.' });
+        } else {
+          res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+        }
+      });
+  }
 };
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  console.log('user',req.user._id);
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ card }))
     .catch((err) => {

@@ -3,7 +3,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const {
-  ERROR_CODE_BAD_REQUEST, ERROR_CODE_BAD_LOGIN_OR_PASS, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL,
+  ERROR_CODE_BAD_REQUEST,
+  ERROR_CODE_BAD_LOGIN_OR_PASS,
+  ERROR_CODE_NOT_FOUND,
+  ERROR_CODE_INTERNAL,
+  SEKRET_KEY,
 } = require('../constants');
 
 module.exports.getUsers = (req, res) => {
@@ -100,14 +104,30 @@ module.exports.login = (req, res) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      console.log(user._id);
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-      console.log(token);
+      const token = jwt.sign({ _id: user._id }, SEKRET_KEY, { expiresIn: '7d' });
       res.send({ token });
     })
     .catch((err) => {
       res
         .status(ERROR_CODE_BAD_LOGIN_OR_PASS)
         .send({ message: err.message });
+    });
+};
+
+module.exports.getCurrentUsers = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.send({ user });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя.' });
+      } else {
+        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+      }
     });
 };

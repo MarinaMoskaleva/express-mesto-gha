@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { ERROR_CODE_NOT_FOUND } = require('./constants');
-// const auth = require('./middlewares/auth');
+const auth = require('./middlewares/auth');
 const {
   createUser, login,
 } = require('./controllers/users');
@@ -22,6 +22,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));

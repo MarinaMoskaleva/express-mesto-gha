@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
+const { ERROR_CODE_BAD_AUTH, SEKRET_KEY } = require('../constants');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
-  console.log(req.headers);
   if (!authorization || !authorization.startsWith('Bearer ')) {
     return res
-      .status(401)
+      .status(ERROR_CODE_BAD_AUTH)
       .send({ message: 'Необходима авторизация' });
   }
 
@@ -13,10 +13,10 @@ module.exports = (req, res, next) => {
 
   let payload;
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    payload = jwt.verify(token, SEKRET_KEY);
   } catch (err) {
     return res
-      .status(401)
+      .status(ERROR_CODE_BAD_AUTH)
       .send({ message: 'Необходима авторизация' });
   }
   req.user = payload;
