@@ -38,7 +38,7 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   if (!email || !password) {
-    throw new BadRequestError('Поля email и password обязательны.');
+    next(new BadRequestError('Поля email и password обязательны.'));
   }
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -55,7 +55,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
       } else if (err.code === 11000) {
-        next(new ExistEmailError('Передан уже зарегестрированный email.'));
+        next(new ExistEmailError('Передан уже зарегистрированный email.'));
       } else {
         next(err);
       }
