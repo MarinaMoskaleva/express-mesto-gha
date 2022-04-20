@@ -1,5 +1,10 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL } = require('../constants');
+
+const {
+  ERROR_CODE_BAD_REQUEST, ERROR_CODE_BAD_LOGIN_OR_PASS, ERROR_CODE_NOT_FOUND, ERROR_CODE_INTERNAL,
+} = require('../constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -28,9 +33,14 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, password, email,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, password: hash, email,
+    }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -82,5 +92,22 @@ module.exports.updateUserAvatar = (req, res) => {
       } else {
         res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
       }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      console.log(user._id);
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      console.log(token);
+      res.send({ token });
+    })
+    .catch((err) => {
+      res
+        .status(ERROR_CODE_BAD_LOGIN_OR_PASS)
+        .send({ message: err.message });
     });
 };

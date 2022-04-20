@@ -2,6 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { ERROR_CODE_NOT_FOUND } = require('./constants');
+// const auth = require('./middlewares/auth');
+const {
+  createUser, login,
+} = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -15,12 +19,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 }, (err) => {
   if (err) throw err;
 });
-app.use((req, res, next) => {
-  req.user = {
-    _id: '625488ccf0acc0a2e160b5ed',
-  };
-  next();
-});
+
+app.post('/signin', login);
+app.post('/signup', createUser);
+
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
