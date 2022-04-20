@@ -1,55 +1,50 @@
 const Card = require('../models/card');
-const {
-  ERROR_CODE_BAD_REQUEST,
-  ERROR_CODE_NOT_FOUND,
-  ERROR_CODE_INTERNAL,
-  ERROR_CODE_BAD_AUTH,
-} = require('../constants');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const DelCardError = require('../errors/del-card-err');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ cards }))
-    .catch(() => {
-      res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
-    });
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   if (req.user._id !== req.params.owner) {
-    res.status(ERROR_CODE_BAD_AUTH).send({ message: 'Попытка удалить чужую карточку.' });
+    throw new DelCardError('Попытка удалить чужую карточку.');
   } else {
     Card.findByIdAndRemove(req.params.cardId)
       .then((card) => {
         if (!card) {
-          res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+          throw new NotFoundError('Карточка с указанным _id не найдена.');
         } else {
           res.send({ card });
         }
       })
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при удалении карточки.' });
+          next(BadRequestError('Переданы некорректные данные при удалении карточки.'));
         } else {
-          res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+          next(err);
         }
       });
   }
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
+        next(BadRequestError('Переданы некорректные данные при создании карточки.'));
       } else {
-        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+        next(err);
       }
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -57,21 +52,21 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки.' });
+        throw new NotFoundError('Передан несуществующий _id карточки.');
       } else {
         res.send({ card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+        next(BadRequestError('Переданы некорректные данные для постановки/снятии лайка.'));
       } else {
-        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+        next(err);
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -79,16 +74,16 @@ module.exports.dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки.' });
+        throw new NotFoundError('Передан несуществующий _id карточки.');
       } else {
         res.send({ card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+        next(BadRequestError('Переданы некорректные данные для постановки/снятии лайка.'));
       } else {
-        res.status(ERROR_CODE_INTERNAL).send({ message: 'Ошибка по умолчанию.' });
+        next(err);
       }
     });
 };
