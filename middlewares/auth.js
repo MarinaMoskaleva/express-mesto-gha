@@ -5,7 +5,7 @@ const BadAuthError = require('../errors/bad-auth-err');
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return new BadAuthError('Необходима авторизация.');
+    throw new BadAuthError('Необходима авторизация.');
   }
 
   const token = authorization.replace('Bearer ', '');
@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, SEKRET_KEY);
   } catch (err) {
-    return new BadAuthError('Необходима авторизация.');
+    throw new BadAuthError('Необходима авторизация.');
   }
   req.user = payload;
 

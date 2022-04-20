@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const { ERROR_CODE_INTERNAL } = require('./constants');
 const auth = require('./middlewares/auth');
 const {
@@ -32,7 +33,7 @@ app.use('/cards', require('./routes/cards'));
 app.use((req, res, next) => {
   next(new NotFoundError('Неправильный путь'));
 });
-
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = ERROR_CODE_INTERNAL, message } = err;
   res
@@ -44,5 +45,5 @@ app.use((err, req, res, next) => {
     });
   next();
 });
-
+// app.all('/*', (req, res) => res.status(404).send({ message: 'Запрашиваемый ресурс не найден' }));
 app.listen(PORT);
