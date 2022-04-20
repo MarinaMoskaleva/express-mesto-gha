@@ -25,7 +25,7 @@ module.exports.getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(BadRequestError('Передан некорректный _id пользователя.'));
+        next(new BadRequestError('Передан некорректный _id пользователя.'));
       } else {
         next(err);
       }
@@ -48,9 +48,9 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(BadRequestError('Переданы некорректные данные при создании пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
       } else if (err.code === 11000) {
-        next(ExistEmailError('Передан уже зарегестрированный email.'));
+        next(new ExistEmailError('Передан уже зарегестрированный email.'));
       } else {
         next(err);
       }
@@ -63,16 +63,16 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(NotFoundError('Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else {
         res.send({ user });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
       } else if (err.name === 'CastError') {
-        next(NotFoundError('Передан некорректный _id пользователя.'));
+        next(new NotFoundError('Передан некорректный _id пользователя.'));
       } else {
         next(err);
       }
@@ -85,16 +85,16 @@ module.exports.updateUserAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(NotFoundError('Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else {
         res.send({ user });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(BadRequestError('Переданы некорректные данные при обновлении аватара.'));
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара.'));
       } else if (err.name === 'CastError') {
-        next(NotFoundError('Передан некорректный _id пользователя.'));
+        next(new NotFoundError('Передан некорректный _id пользователя.'));
       } else {
         next(err);
       }
@@ -110,7 +110,7 @@ module.exports.login = (req, res, next) => {
       res.send({ token });
     })
     .catch(() => {
-      next(BadAuthError('Неправильные почта или пароль.'));
+      next(new BadAuthError('Неправильные почта или пароль.'));
     });
 };
 
@@ -118,14 +118,14 @@ module.exports.getCurrentUsers = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        next(NotFoundError('Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else {
         res.send({ user });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(NotFoundError('Передан некорректный _id пользователя.'));
+        next(new NotFoundError('Передан некорректный _id пользователя.'));
       } else {
         next(err);
       }
