@@ -13,12 +13,13 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        return new NotFoundError('Карточка с указанным _id не найдена.');
+        console.log(card);
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
+      } else if (!card.owner.equals(req.user._id)) {
+        throw new DelCardError('Попытка удалить чужую карточку.');
+      } else {
+        card.remove().then(() => res.status(200).send(card));
       }
-      if (!card.owner.equals(req.user._id)) {
-        return new DelCardError('Попытка удалить чужую карточку.');
-      }
-      return card.remove().then(() => res.status(200).send(card));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
