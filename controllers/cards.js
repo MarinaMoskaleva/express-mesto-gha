@@ -10,25 +10,43 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  if (req.user._id !== req.params.owner) {
-    throw new DelCardError('Попытка удалить чужую карточку.');
-  } else {
-    Card.findByIdAndRemove(req.params.cardId)
-      .then((card) => {
-        if (!card) {
-          throw new NotFoundError('Карточка с указанным _id не найдена.');
-        } else {
-          res.send({ card });
-        }
-      })
-      .catch((err) => {
-        if (err.name === 'CastError') {
-          next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));
-        } else {
-          next(err);
-        }
-      });
-  }
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      if (!card) {
+        return new NotFoundError('Карточка с указанным _id не найдена.');
+      }
+      if (!card.owner.equals(req.user._id)) {
+        return new DelCardError('Попытка удалить чужую карточку.');
+      }
+      return card.remove().then(() => res.status(200).send(card));
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));
+      } else {
+        next(err);
+      }
+    });
+  // console.log(req.user._id, req.params.owner);
+  // if (req.user._id !== req.params.owner) {
+  //   throw new DelCardError('Попытка удалить чужую карточку.');
+  // } else {
+  //   Card.findByIdAndRemove(req.params.cardId)
+  //     .then((card) => {
+  //       if (!card) {
+  //         throw new NotFoundError('Карточка с указанным _id не найдена.');
+  //       } else {
+  //         res.status(200).send({ card });
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       if (err.name === 'CastError') {
+  //         next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));
+  //       } else {
+  //         next(err);
+  //       }
+  //     });
+  // }
 };
 
 module.exports.createCard = (req, res, next) => {
