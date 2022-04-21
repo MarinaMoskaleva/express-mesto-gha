@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
 const validator = require('validator');
-const { ERROR_CODE_INTERNAL, AVATAR_REGEX } = require('./constants');
+const { AVATAR_REGEX } = require('./constants');
 const auth = require('./middlewares/auth');
+const cenralErrors = require('./middlewares/central-err');
 const {
   createUser, login,
 } = require('./controllers/users');
@@ -54,26 +55,27 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-// app.use(auth);
+app.use(auth);
 
-app.use('/users', auth, require('./routes/users'));
-app.use('/cards', auth, require('./routes/cards'));
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
 
 app.use('/', (req, res, next) => {
   next(new NotFoundError('Неправильный путь.'));
 });
 
 app.use(errors());
-app.use((err, req, res, next) => {
-  const { statusCode = ERROR_CODE_INTERNAL, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === ERROR_CODE_INTERNAL
-        ? 'Ошибка по умолчанию.'
-        : message,
-    });
-  next();
-});
+// app.use((err, req, res, next) => {
+//   const { statusCode = ERROR_CODE_INTERNAL, message } = err;
+//   res
+//     .status(statusCode)
+//     .send({
+//       message: statusCode === ERROR_CODE_INTERNAL
+//         ? 'Ошибка по умолчанию.'
+//         : message,
+//     });
+//   next();
+// });
+app.use(cenralErrors);
 
 app.listen(PORT);
