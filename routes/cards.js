@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { ObjectId } = require('mongoose').Types;
 const { celebrate, Joi } = require('celebrate');
 const { AVATAR_REGEX } = require('../constants');
 
@@ -7,11 +8,21 @@ const {
 } = require('../controllers/cards');
 
 router.get('/', getCards);
-router.delete('/:cardId', deleteCard);
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).hex().required()
+      .custom((value, helpers) => {
+        if (ObjectId.isValid(value)) {
+          return value;
+        }
+        return helpers.message('Некорректный id');
+      }),
+  }),
+}), deleteCard);
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().custom((value, helpers) => {
+    link: Joi.string().required().custom((value, helpers) => {
       if (AVATAR_REGEX.test(value)) {
         return value;
       }
