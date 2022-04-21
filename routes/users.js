@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const validator = require('validator');
+const { AVATAR_REGEX } = require('../constants');
 
 const {
   getUsers, getUserById, updateUser, updateUserAvatar, getCurrentUsers,
@@ -25,11 +25,11 @@ router.get('/', getUsers);
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().custom((value, helpers) => {
-      if (validator.isURL(value)) {
+    avatar: Joi.string().custom((value, helpers) => {
+      if (AVATAR_REGEX.test(value)) {
         return value;
       }
-      return helpers;
+      return helpers.message('Некорректная ссылка');
     }),
   }),
 }), updateUserAvatar);

@@ -45,7 +45,9 @@ module.exports.createUser = (req, res, next) => {
       name, about, avatar, password: hash, email,
     }))
     .then((user) => {
-      res.status(200).send({ data: user });
+      res.status(200).send({
+        name: user.name, about: user.about, avatar: user.avatar, _id: user._id, email: user.email,
+      });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
