@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
 const validator = require('validator');
+const helmet = require('helmet');
 const { AVATAR_REGEX } = require('./constants');
 const auth = require('./middlewares/auth');
 const cenralErrors = require('./middlewares/central-err');
@@ -13,6 +14,8 @@ const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
+
+app.use(helmet());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -65,17 +68,7 @@ app.use('/', (req, res, next) => {
 });
 
 app.use(errors());
-// app.use((err, req, res, next) => {
-//   const { statusCode = ERROR_CODE_INTERNAL, message } = err;
-//   res
-//     .status(statusCode)
-//     .send({
-//       message: statusCode === ERROR_CODE_INTERNAL
-//         ? 'Ошибка по умолчанию.'
-//         : message,
-//     });
-//   next();
-// });
+
 app.use(cenralErrors);
 
 app.listen(PORT);
