@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi, errors } = require('celebrate');
-// const validator = require('validator');
-const { ERROR_CODE_INTERNAL } = require('./constants');
+const validator = require('validator');
+const { ERROR_CODE_INTERNAL, AVATAR_REGEX } = require('./constants');
 const auth = require('./middlewares/auth');
 const {
   createUser, login,
@@ -26,8 +26,21 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.post('/signin', login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    email: Joi.string().required().custom((value, helpers) => {
+      if (validator.isEmail(value)) {
+        return value;
+      }
+      return helpers.message('Некорректный email');
+    }),
+    password: Joi.string().required(),
+    avatar: Joi.string().custom((value, helpers) => {
+      if (AVATAR_REGEX.test(value)) {
+        return value;
+      }
+      return helpers.message('Некорректная ссылка');
+    }),
   }),
 }), createUser);
 
