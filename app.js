@@ -13,11 +13,11 @@ const {
 } = require('./controllers/users');
 const NotFoundError = require('./errors/not-found-err');
 
-const allowedCors = [
-  'https://mesto.moskalevam.nomoredomains.work',
-  'http://mesto.moskalevam.nomoredomains.work',
-  'localhost:3000'
-];
+// const allowedCors = [
+//   'https://mesto.moskalevam.nomoredomains.work',
+//   'http://mesto.moskalevam.nomoredomains.work',
+//   'localhost:3000'
+// ];
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -36,13 +36,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger);
 
-app.use(function(req, res, next) {
-  const { origin } = req.headers;
-  if (allowedCors.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  next();
-});
+// app.use(function(req, res, next) {
+//   const { origin } = req.headers;
+//   if (allowedCors.includes(origin)) {
+//     res.header('Access-Control-Allow-Origin', origin);
+//   }
+//   next();
+// });
 
 // app.use(function(req, res) {
 //   const { method } = req;
