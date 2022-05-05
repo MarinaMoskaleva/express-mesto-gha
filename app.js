@@ -16,7 +16,7 @@ const NotFoundError = require('./errors/not-found-err');
 const allowedCors = [
   'https://mesto.moskalevam.nomoredomains.work',
   'http://mesto.moskalevam.nomoredomains.work',
-  'localhost:3000'
+  'localhost:3000',
 ];
 
 const { PORT = 3000 } = process.env;
@@ -36,7 +36,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger);
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   const { origin } = req.headers;
   if (allowedCors.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
@@ -44,15 +44,16 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(function(req, res) {
+app.use((req, res, next) => {
   const { method } = req;
-  const DEFAULT_ALLOWED_METHODS = "GET,HEAD,PUT,PATCH,POST,DELETE";
+  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
   const requestHeaders = req.headers['access-control-request-headers'];
   if (method === 'OPTIONS') {
     res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
     res.header('Access-Control-Allow-Headers', requestHeaders);
     return res.end();
   }
+  return next();
 });
 
 app.post('/signin', celebrate({
